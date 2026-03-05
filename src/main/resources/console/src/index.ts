@@ -7,52 +7,43 @@ export default definePlugin({
   routes: [
     {
       path: "/sync-platforms",
-      children: [
-        {
-          path: "",
-          name: "SyncPlatforms",
-          component: PlatformList,
-          meta: {
-            title: "多平台同步",
-            menu: {
-              name: "多平台同步",
-              group: "content",
-              icon: "ri:share-circle-line",
-              priority: 50,
-            },
-          },
+      component: PlatformList,
+      meta: {
+        title: "多平台同步",
+        menu: {
+          name: "sync-platforms",
+          title: "多平台同步",
+          icon: "ri:share-circle-line",
+          link: "/sync-platforms",
         },
-        {
-          path: "create",
-          name: "SyncPlatformCreate",
-          component: PlatformForm,
-          meta: {
-            title: "添加平台",
-          },
-        },
-        {
-          path: ":name/edit",
-          name: "SyncPlatformEdit",
-          component: PlatformForm,
-          meta: {
-            title: "编辑平台",
-          },
-        },
-      ],
+      },
+    },
+    {
+      path: "/sync-platforms/create",
+      component: PlatformForm,
+      meta: {
+        title: "添加平台",
+      },
+    },
+    {
+      path: "/sync-platforms/:name/edit",
+      component: PlatformForm,
+      meta: {
+        title: "编辑平台",
+      },
     },
   ],
   extensionPoints: {
-    "post:editor:action": (post: any) => {
-      return [
-        {
-          label: "同步到其他平台",
-          icon: "ri:share-circle-line",
-          action: () => {
-            // TODO: 打开同步对话框
-            console.log("Sync post:", post);
-          },
-        },
-      ];
+    "post:list:action:create": [
+    {
+      type: "dropdown",
+      primary: true,
+      label: "同步到其他平台",
+      icon: "ri:share-circle-line",
+      action: () => {
+        // TODO: 打开同步对话框
+        console.log("Sync post:", post);
+      },
     },
-  },
+  ],
 });
