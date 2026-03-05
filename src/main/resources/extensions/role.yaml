@@ -1,0 +1,29 @@
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: halo-multi-publisher-admin
+  labels:
+    halo.run/role-template: "true"
+    plugin.halo.run/role-template: "true"
+rules:
+  - apiGroups: ["sync.halo.run"]
+    resources: ["syncplatforms", "synctasks"]
+    verbs: ["*"]
+  - apiGroups: ["sync.halo.run"]
+    resources: ["syncplatforms/status", "synctasks/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["content.halo.run"]
+    resources: ["posts", "posts/status"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: halo-multi-publisher-viewer
+  labels:
+    halo.run/role-template: "true"
+    plugin.halo.run/role-template: "true"
+rules:
+  - apiGroups: ["sync.halo.run"]
+    resources: ["syncplatforms", "synctasks"]
+    verbs: ["get", "list"]

@@ -1,0 +1,13 @@
+# GitHub Actions - Release
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    uses: halo-sigs/reusable-workflows/.github/workflows/plugin-cd.yaml@v3
+    with:
+      java-version: 21
+      skip-appstore-release: true
