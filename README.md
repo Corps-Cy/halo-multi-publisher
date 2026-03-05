@@ -14,7 +14,7 @@
 
 ### 方式一：从 Release 下载
 
-1. 前往 [Releases](https://github.com/your-username/halo-multi-publisher/releases) 页面
+1. 前往 [Releases](https://github.com/Corps-Cy/halo-multi-publisher/releases) 页面
 2. 下载最新版本的 `.jar` 文件
 3. 在 Halo 后台 -> 插件 -> 安装插件，上传 jar 文件
 
@@ -22,7 +22,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/halo-multi-publisher.git
+git clone https://github.com/Corps-Cy/halo-multi-publisher.git
 cd halo-multi-publisher
 
 # 构建

@@ -10,7 +10,7 @@ spec:
   version: 1.0.0-SNAPSHOT
   requires: ">=2.20.0"
   enabled: true
-  homepage: https://github.com/your-username/halo-multi-publisher
+  homepage: https://github.com/Corps-Cy/halo-multi-publisher
   author:
     name: Halo Multi-Publisher Team
   license:
