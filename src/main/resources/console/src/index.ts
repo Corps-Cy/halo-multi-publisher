@@ -1,49 +1,47 @@
-import { definePlugin } from "@halo-dev/console-shared";
-import PlatformList from "./PlatformList.vue";
-import PlatformForm from "./PlatformForm.vue";
+import { definePlugin } from "@halo-dev/ui-shared";
+import { markRaw } from "vue";
+import { IconRiShareLine } from "@iconify-prerendered/vue-remix-icon";
+import PlatformList from "./views/PlatformList.vue";
+import TaskList from "./views/TaskList.vue";
 
 export default definePlugin({
   components: {},
   routes: [
     {
-      path: "/sync-platforms",
-      component: PlatformList,
-      meta: {
-        title: "多平台同步",
-        menu: {
-          name: "sync-platforms",
+      parentName: "Root",
+      route: {
+        path: "/multi-publisher",
+        name: "MultiPublisher",
+        redirect: "/multi-publisher/platforms",
+        meta: {
           title: "多平台同步",
-          icon: "ri:share-circle-line",
-          link: "/sync-platforms",
+          menu: {
+            name: "多平台同步",
+            group: "content",
+            icon: markRaw(IconRiShareLine),
+            priority: 0
+          }
         },
-      },
-    },
-    {
-      path: "/sync-platforms/create",
-      component: PlatformForm,
-      meta: {
-        title: "添加平台",
-      },
-    },
-    {
-      path: "/sync-platforms/:name/edit",
-      component: PlatformForm,
-      meta: {
-        title: "编辑平台",
-      },
-    },
+        children: [
+          {
+            path: "platforms",
+            name: "PublisherPlatforms",
+            component: PlatformList,
+            meta: {
+              title: "平台管理"
+            }
+          },
+          {
+            path: "tasks",
+            name: "PublisherTasks",
+            component: TaskList,
+            meta: {
+              title: "同步任务"
+            }
+          }
+        ]
+      }
+    }
   ],
-  extensionPoints: {
-    "post:list:action:create": [
-    {
-      type: "dropdown",
-      primary: true,
-      label: "同步到其他平台",
-      icon: "ri:share-circle-line",
-      action: () => {
-        // TODO: 打开同步对话框
-        console.log("Sync post:", post);
-      },
-    },
-  ],
+  extensionPoints: {}
 });

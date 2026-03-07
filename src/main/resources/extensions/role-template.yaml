@@ -1,0 +1,23 @@
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: halo-multi-publisher-role
+  labels:
+    halo.run/role-template: "true"
+    halo.run/hidden: "false"
+  annotations:
+    rbac.authorization.halo.run/dependencies: |
+      [
+        {
+          "kind": "Role",
+          "name": "post-read",
+          "scope": "system"
+        }
+      ]
+rules:
+  - apiGroups: [ "sync.halo.run" ]
+    resources: [ "syncplatforms", "synctasks" ]
+    verbs: [ "get", "list", "create", "update", "delete" ]
+  - apiGroups: [ "content.halo.run" ]
+    resources: [ "posts" ]
+    verbs: [ "get", "list" ]

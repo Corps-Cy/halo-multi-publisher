@@ -2,18 +2,18 @@ apiVersion: plugin.halo.run/v1alpha1
 kind: Plugin
 metadata:
   name: halo-multi-publisher
-  labels:
-    app: halo-multi-publisher
 spec:
-  displayName: 多平台文章同步
-  description: 将 Halo 文章自动同步到微信公众号、掘金、知乎等平台
-  version: 1.0.0-SNAPSHOT
-  requires: ">=2.20.0"
   enabled: true
-  homepage: https://github.com/Corps-Cy/halo-multi-publisher
+  requires: ">=2.20.0"
   author:
-    name: Halo Multi-Publisher Team
+    name: Corps-Cy
+    website: https://github.com/Corps-Cy
+  logo: /assets/logo.svg
+  homepage: https://github.com/Corps-Cy/halo-multi-publisher#readme
+  displayName: 多平台文章同步
+  description: 将 Halo 博客文章自动同步到微信公众号、掘金等平台
   license:
     - name: Apache-2.0
+    - url: https://www.apache.org/licenses/LICENSE-2.0
   settingName: halo-multi-publisher-settings
-  configMapName: halo-multi-publisher-configmap
+  configMapName: halo-multi-publisher-config
