@@ -1,5 +1,8 @@
 package run.halo.sync.publisher.endpoint;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
@@ -9,13 +12,10 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import run.halo.app.core.extension.endpoint.CustomEndpoint;
 import run.halo.app.extension.GroupVersion;
-import run.halo.app.extension.ReactiveExtensionClient;
+import run.halo.app.extension.ExtensionClient;
 import run.halo.sync.publisher.adapter.PlatformAdapter;
 import run.halo.sync.publisher.extension.SyncPlatform;
 import run.halo.sync.publisher.extension.SyncTask;
-
-import java.util.List;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class SyncPlatformEndpoint implements CustomEndpoint {
     private static final String GROUP = "sync.halo.run";
     private static final String VERSION = "v1alpha1";
 
-    private final ReactiveExtensionClient client;
+    private final ExtensionClient client;
     private final List<PlatformAdapter> adapters;
 
     @Override
@@ -65,41 +65,45 @@ public class SyncPlatformEndpoint implements CustomEndpoint {
     }
 
     private Mono<ServerResponse> listPlatforms(ServerRequest request) {
-        return client.listAll(SyncPlatform.class, null, null)
-            .collectList()
-            .flatMap(platforms -> ServerResponse.ok().bodyValue(platforms));
+        List<SyncPlatform> platforms = client.listAll(SyncPlatform.class, null, null);
+        return ServerResponse.ok().bodyValue(platforms);
     }
 
     private Mono<ServerResponse> getPlatform(ServerRequest request) {
         String name = request.pathVariable("name");
-        return client.fetch(SyncPlatform.class, name)
-            .flatMap(platform -> ServerResponse.ok().bodyValue(platform))
-            .switchIfEmpty(ServerResponse.notFound().build());
+        Optional<SyncPlatform> platform = client.fetch(SyncPlatform.class, name);
+        if (platform.isEmpty()) {
+            return ServerResponse.notFound().build();
+        }
+        return ServerResponse.ok().bodyValue(platform.get());
     }
 
     private Mono<ServerResponse> validatePlatform(ServerRequest request) {
         String name = request.pathVariable("name");
-        return client.fetch(SyncPlatform.class, name)
-            .flatMap(platform -> {
-                PlatformAdapter adapter = getAdapter(platform.getSpec().getPlatformType());
-                if (adapter == null) {
-                    return ServerResponse.badRequest()
-                        .bodyValue(Map.of("error", "不支持的平台类型"));
-                }
-                return adapter.validateCredentials(platform)
-                    .flatMap(valid -> ServerResponse.ok()
-                        .bodyValue(Map.of("valid", valid)));
-            })
-            .switchIfEmpty(ServerResponse.notFound().build());
+        Optional<SyncPlatform> platformOpt = client.fetch(SyncPlatform.class, name);
+        if (platformOpt.isEmpty()) {
+            return ServerResponse.notFound().build();
+        }
+
+        SyncPlatform platform = platformOpt.get();
+        PlatformAdapter adapter = getAdapter(platform.getSpec().getPlatformType());
+        if (adapter == null) {
+            return ServerResponse.badRequest()
+                .bodyValue(Map.of("error", "不支持的平台类型"));
+        }
+
+        Boolean valid = adapter.validateCredentials(platform).block();
+        return ServerResponse.ok().bodyValue(Map.of("valid", valid));
     }
 
     private Mono<ServerResponse> listTasks(ServerRequest request) {
         String platformName = request.queryParam("platform").orElse(null);
 
-        return client.listAll(SyncTask.class, null, null)
+        List<SyncTask> tasks = client.listAll(SyncTask.class, null, null).stream()
             .filter(task -> platformName == null || platformName.equals(task.getSpec().getPlatformName()))
-            .collectList()
-            .flatMap(tasks -> ServerResponse.ok().bodyValue(tasks));
+            .toList();
+
+        return ServerResponse.ok().bodyValue(tasks);
     }
 
     private Mono<ServerResponse> createTask(ServerRequest request) {
@@ -109,18 +113,23 @@ public class SyncPlatformEndpoint implements CustomEndpoint {
                     task.setStatus(new SyncTask.Status());
                     task.getStatus().setPhase(SyncTask.PHASE_PENDING);
                 }
-                return client.create(task);
-            })
-            .flatMap(created -> ServerResponse.ok().bodyValue(created))
-            .onErrorResume(e -> ServerResponse.badRequest()
-                .bodyValue(Map.of("error", e.getMessage())));
+                try {
+                    client.create(task);
+                    return ServerResponse.ok().bodyValue(task);
+                } catch (Exception e) {
+                    return ServerResponse.badRequest()
+                        .bodyValue(Map.of("error", e.getMessage()));
+                }
+            });
     }
 
     private Mono<ServerResponse> getTask(ServerRequest request) {
         String name = request.pathVariable("name");
-        return client.fetch(SyncTask.class, name)
-            .flatMap(task -> ServerResponse.ok().bodyValue(task))
-            .switchIfEmpty(ServerResponse.notFound().build());
+        Optional<SyncTask> task = client.fetch(SyncTask.class, name);
+        if (task.isEmpty()) {
+            return ServerResponse.notFound().build();
+        }
+        return ServerResponse.ok().bodyValue(task.get());
     }
 
     private PlatformAdapter getAdapter(SyncPlatform.PlatformType type) {
